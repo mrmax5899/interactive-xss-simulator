@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Extreme XSS Interactive Simulator</title>
+    <title>Ultimate XSS Interactive Simulator Lab</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -11,9 +11,8 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #020617; /* slate-950 */
+            background-color: #020617; 
             color: #f8fafc;
-            /* Changed from fixed h-screen to allow scrolling on mobile */
             min-height: 100vh; 
             overflow-x: hidden;
             background-image: radial-gradient(circle at 50% 50%, #0f172a 0%, #020617 100%);
@@ -21,129 +20,59 @@
 
         .font-code { font-family: 'Fira Code', monospace; }
 
-        /* Animation Keyframes */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        /* Animations */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-20px); } }
+        @keyframes pulse-glow-blue { 0%, 100% { box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); border-color: #38bdf8; } 50% { box-shadow: 0 0 35px rgba(56, 189, 248, 0.8); border-color: #7dd3fc; } }
+        @keyframes pulse-glow-red { 0%, 100% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.6); border-color: #ef4444; } 50% { box-shadow: 0 0 50px rgba(239, 68, 68, 1); border-color: #f87171; } }
+        @keyframes pulse-glow-emerald { 0%, 100% { box-shadow: 0 0 15px rgba(52, 211, 153, 0.4); border-color: #34d399; } 50% { box-shadow: 0 0 35px rgba(52, 211, 153, 0.8); border-color: #6ee7b7; } }
+        @keyframes pulse-glow-purple { 0%, 100% { box-shadow: 0 0 15px rgba(168, 85, 247, 0.4); border-color: #a855f7; } 50% { box-shadow: 0 0 35px rgba(168, 85, 247, 0.8); border-color: #c084fc; } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); } 20%, 40%, 60%, 80% { transform: translateX(5px); } }
+        @keyframes scanline { 0% { top: 0; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
 
-        @keyframes fadeOut {
-            from { opacity: 1; transform: translateY(0); }
-            to { opacity: 0; transform: translateY(-20px); }
-        }
-
-        @keyframes pulse-glow-blue {
-            0%, 100% { box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); border-color: #38bdf8; }
-            50% { box-shadow: 0 0 35px rgba(56, 189, 248, 0.8); border-color: #7dd3fc; }
-        }
-
-        @keyframes pulse-glow-red {
-            0%, 100% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.6); border-color: #ef4444; }
-            50% { box-shadow: 0 0 50px rgba(239, 68, 68, 1); border-color: #f87171; }
-        }
-
-        @keyframes pulse-glow-emerald {
-            0%, 100% { box-shadow: 0 0 15px rgba(52, 211, 153, 0.4); border-color: #34d399; }
-            50% { box-shadow: 0 0 35px rgba(52, 211, 153, 0.8); border-color: #6ee7b7; }
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-            20%, 40%, 60%, 80% { transform: translateX(5px); }
-        }
-
-        @keyframes scanline {
-            0% { top: 0; opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% { top: 100%; opacity: 0; }
-        }
-
-        /* Utility Classes */
-        .fade-in { animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
-        .fade-out { animation: fadeOut 0.5s ease-out forwards; }
+        .fade-in { animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+        .fade-out { animation: fadeOut 0.4s ease-out forwards; }
         .shake-intense { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
         
         .node-active-blue { animation: pulse-glow-blue 1.5s infinite; transform: scale(1.05); transition: transform 0.3s ease; }
         .node-active-red { animation: pulse-glow-red 0.5s infinite; transform: scale(1.1); transition: transform 0.1s ease; }
         .node-active-emerald { animation: pulse-glow-emerald 1.5s infinite; transform: scale(1.05); transition: transform 0.3s ease; }
+        .node-active-purple { animation: pulse-glow-purple 1.5s infinite; transform: scale(1.05); transition: transform 0.3s ease; }
 
-        /* Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
 
-        /* Browser Window */
-        .browser-window {
-            border: 1px solid #334155;
-            border-radius: 0.75rem;
-            overflow: hidden;
-            background: #ffffff;
-            color: #0f172a;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-        }
-        .browser-header {
-            background: #e2e8f0;
-            padding: 0.75rem;
-            border-bottom: 1px solid #cbd5e1;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
+        .browser-window { border: 1px solid #334155; border-radius: 0.75rem; overflow: hidden; background: #ffffff; color: #0f172a; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); display: flex; flex-direction: column; height: 100%; }
+        .browser-header { background: #e2e8f0; padding: 0.75rem; border-bottom: 1px solid #cbd5e1; display: flex; align-items: center; gap: 0.5rem; }
 
-        /* Render Overlay Effect */
-        .render-overlay {
-            position: absolute;
-            inset: 0;
-            background: rgba(15, 23, 42, 0.85);
-            z-index: 40;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(4px);
-        }
-        .render-scanline {
-            position: absolute;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: #38bdf8;
-            box-shadow: 0 0 15px #38bdf8, 0 0 30px #38bdf8;
-            z-index: 41;
-            pointer-events: none;
-            animation: scanline 1.5s linear infinite;
-        }
-        .render-scanline.malicious {
-            background: #ef4444;
-            box-shadow: 0 0 15px #ef4444, 0 0 30px #ef4444;
-        }
+        .render-overlay { position: absolute; inset: 0; background: rgba(15, 23, 42, 0.85); z-index: 40; display: flex; flex-direction: column; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
+        .render-scanline { position: absolute; left: 0; width: 100%; height: 4px; background: #38bdf8; box-shadow: 0 0 15px #38bdf8, 0 0 30px #38bdf8; z-index: 41; pointer-events: none; animation: scanline 1.5s linear infinite; }
+        .render-scanline.malicious { background: #ef4444; box-shadow: 0 0 15px #ef4444, 0 0 30px #ef4444; }
 
-        /* Floating Animation Card */
-        #data-card {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(0);
-            opacity: 0;
-            z-index: 100;
-            transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
+        #data-card { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); opacity: 0; z-index: 100; transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); pointer-events: none; }
+
+        /* Card Hover Effects */
+        .xss-card { transition: all 0.3s ease; cursor: pointer; }
+        .xss-card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px -5px rgba(0,0,0,0.5); border-color: #38bdf8; }
+        .xss-card .overlay { transition: all 0.3s ease; opacity: 0; backdrop-filter: blur(0px); }
+        .xss-card:hover .overlay { opacity: 1; backdrop-filter: blur(8px); }
+
     </style>
 </head>
 <body class="w-full flex flex-col relative">
 
-    <header class="bg-slate-900/90 backdrop-blur p-3 md:p-4 border-b border-slate-800 flex flex-col sm:flex-row justify-between items-center z-10 shadow-lg sticky top-0 gap-3 sm:gap-0">
-        <h1 class="text-xl md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-emerald-400 text-center sm:text-left">
-            <i class="fas fa-biohazard text-sky-400 mr-2"></i>Extreme XSS Visualizer
+    <!-- Header -->
+    <header class="bg-slate-900/90 backdrop-blur p-3 md:p-4 border-b border-slate-800 flex flex-col sm:flex-row justify-between items-center z-50 shadow-lg sticky top-0 gap-3 sm:gap-0 transition-all" id="main-header">
+        <h1 class="text-xl md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-emerald-400 text-center sm:text-left flex items-center cursor-pointer" onclick="goHome()">
+            <i class="fas fa-biohazard text-sky-400 mr-2"></i>Ultimate XSS Lab
         </h1>
-        <div class="flex items-center gap-2 md:gap-4 flex-wrap justify-center">
-            <button id="btn-pause" class="hidden bg-slate-800 hover:bg-slate-700 text-white font-bold py-1 px-3 md:py-1.5 md:px-4 rounded-full border border-slate-600 transition-colors shadow flex items-center text-xs md:text-sm">
+        <div class="flex items-center gap-2 md:gap-4 flex-wrap justify-center hidden" id="header-controls">
+            <button onclick="goHome()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-1 px-3 md:py-1.5 md:px-4 rounded-full border border-slate-600 transition-colors shadow text-xs md:text-sm">
+                <i class="fas fa-home mr-1"></i> Menu
+            </button>
+            <button id="btn-pause" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-1 px-3 md:py-1.5 md:px-4 rounded-full border border-slate-600 transition-colors shadow flex items-center text-xs md:text-sm">
                 <i class="fas fa-pause mr-1 md:mr-2"></i> Pause (Space)
             </button>
             <div class="text-xs md:text-sm font-code bg-slate-800 px-3 py-1 md:px-4 md:py-1.5 rounded-full border border-slate-700">
@@ -152,6 +81,7 @@
         </div>
     </header>
 
+    <!-- Global Floating Data Card -->
     <div id="data-card" class="bg-slate-900 rounded-xl overflow-hidden shadow-2xl border-2 border-sky-500 flex flex-col w-[95vw] md:w-[750px] max-h-[60vh] md:max-h-[80vh]">
         <div id="data-card-header" class="bg-slate-800 px-3 py-2 md:px-4 md:py-3 font-bold text-xs md:text-sm border-b border-slate-700 flex items-center justify-between shrink-0">
             <span id="data-card-title" class="text-sky-400 text-sm md:text-base"><i class="fas fa-upload mr-2"></i>HTTP Request</span>
@@ -162,51 +92,140 @@
         </div>
     </div>
 
-    <main class="flex-grow flex justify-center items-start p-2 md:p-4 w-full">
+    <main class="flex-grow flex justify-center items-start p-2 md:p-4 w-full relative z-0">
         
-        <div id="scene-intro" class="w-full max-w-5xl bg-slate-900/90 backdrop-blur rounded-2xl p-6 md:p-10 shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-slate-700 fade-in flex flex-col items-center mt-10 md:mt-20 mx-auto">
-            <div class="w-16 h-16 md:w-24 md:h-24 bg-gradient-to-br from-sky-500 to-indigo-600 rounded-full flex items-center justify-center mb-4 md:mb-6 shadow-[0_0_30px_rgba(56,189,248,0.3)]">
-                <i class="fas fa-spider text-2xl md:text-4xl text-white"></i>
-            </div>
-            <h2 class="text-2xl md:text-4xl font-bold mb-3 md:mb-4 text-center">Reflected XSS Process</h2>
-            <p class="text-slate-400 mb-8 md:mb-10 text-center max-w-2xl text-sm md:text-lg">
-                Experience exactly how a Cross-Site Scripting attack travels from a victim's browser, through the network, gets processed poorly by a server, and reflects back to execute malicious code.
-            </p>
-            <button id="btn-start" class="group relative px-6 py-3 md:px-8 md:py-4 bg-transparent overflow-hidden rounded-xl bg-slate-800 border border-sky-500 hover:border-sky-300 transition-all duration-300">
-                <div class="absolute inset-0 w-0 bg-gradient-to-r from-sky-600 to-indigo-600 transition-all duration-[400ms] ease-out group-hover:w-full"></div>
-                <span class="relative text-white font-bold text-base md:text-lg flex items-center">
-                    Initialize Simulation <i class="fas fa-rocket ml-2 md:ml-3 group-hover:translate-x-2 transition-transform"></i>
-                </span>
-            </button>
-        </div>
-
-        <div id="scene-sim" class="w-full max-w-[1400px] hidden fade-in flex-col gap-4 md:gap-6 pb-10 mx-auto">
-            
-            <div class="flex-none h-32 md:h-48 bg-slate-900/60 rounded-2xl border border-slate-800 p-3 md:p-6 relative flex items-center justify-between shadow-inner">
-                
-                <div id="node-client" class="bg-slate-800 border-2 border-slate-600 rounded-xl p-2 md:p-4 flex flex-col items-center w-24 md:w-48 z-10 transition-all duration-300 shrink-0">
-                    <i class="fas fa-laptop-code text-3xl md:text-5xl text-slate-300 mb-2 md:mb-3" id="icon-client"></i>
-                    <h3 class="font-bold text-[10px] md:text-sm text-center leading-tight">Victim's Browser</h3>
-                </div>
-
-                <div class="flex-grow h-1 bg-slate-700 mx-2 md:mx-6 relative rounded-full" id="anim-path">
-                    <div id="laser-packet" class="absolute top-1/2 -translate-y-1/2 left-0 w-8 md:w-12 h-3 md:h-4 rounded-full bg-sky-400 shadow-[0_0_20px_#38bdf8] hidden z-20"></div>
-                </div>
-
-                <div id="node-server" class="bg-slate-800 border-2 border-slate-600 rounded-xl p-2 md:p-4 flex flex-col items-center w-24 md:w-48 z-10 transition-all duration-300 shrink-0">
-                    <i class="fas fa-server text-3xl md:text-5xl text-slate-300 mb-2 md:mb-3" id="icon-server"></i>
-                    <h3 class="font-bold text-[10px] md:text-sm text-center leading-tight">Vulnerable Server</h3>
-                </div>
+        <!-- ================= HOME SCENE (MODULE SELECTOR) ================= -->
+        <div id="scene-home" class="w-full max-w-6xl fade-in flex flex-col items-center mt-4 md:mt-10 mx-auto">
+            <div class="text-center mb-10 md:mb-16">
+                <h2 class="text-3xl md:text-5xl font-black mb-4 tracking-tight text-white">Select Threat Module</h2>
+                <p class="text-slate-400 max-w-2xl mx-auto text-sm md:text-lg">Interactive simulations to understand the mechanics, flow, and execution of different Cross-Site Scripting vulnerabilities.</p>
             </div>
 
-            <div class="flex-grow flex flex-col lg:flex-row gap-4 md:gap-6 min-h-[500px]">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 w-full px-4">
                 
-                <div class="w-full lg:w-1/2 flex flex-col bg-slate-900/80 rounded-2xl border border-slate-700 overflow-hidden shadow-xl min-h-[450px]" id="browser-container">
-                    <div class="bg-slate-800 p-2 md:p-3 text-sm font-bold flex items-center border-b border-slate-700 text-slate-300 shrink-0">
-                        <i class="fab fa-chrome mr-2 text-sky-400"></i> Browser View
+                <!-- Reflected XSS Card -->
+                <div class="xss-card relative bg-slate-800/80 border border-slate-700 rounded-2xl p-6 md:p-8 overflow-hidden group">
+                    <div class="w-14 h-14 bg-sky-500/20 rounded-xl flex items-center justify-center mb-6 border border-sky-500/50">
+                        <i class="fas fa-reply text-2xl text-sky-400"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3 text-white">Reflected XSS</h3>
+                    <p class="text-slate-400 text-sm mb-4 leading-relaxed">Malicious payload is reflected immediately off a web application to the victim's browser without being stored. Often delivered via phishing links.</p>
+                    <div class="flex items-center gap-2 text-xs font-code text-slate-500 mt-auto">
+                        <i class="fas fa-network-wired"></i> Client <i class="fas fa-arrows-alt-h text-slate-600"></i> Server
                     </div>
                     
-                    <div class="flex-grow p-3 md:p-5 bg-slate-200 relative flex flex-col h-full">
+                    <!-- Hover Overlay -->
+                    <div class="overlay absolute inset-0 bg-slate-900/90 flex flex-col items-center justify-center p-6 text-center z-10">
+                        <h4 class="text-xl font-bold text-sky-400 mb-2">Reflected XSS</h4>
+                        <p class="text-sm text-slate-300 mb-6">Wanna see simulation?</p>
+                        <button onclick="startSimulation('reflected')" class="px-6 py-2 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-lg transition-colors shadow-[0_0_15px_rgba(2,132,199,0.5)]">
+                            Launch Lab <i class="fas fa-rocket ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stored XSS Card -->
+                <div class="xss-card relative bg-slate-800/80 border border-slate-700 rounded-2xl p-6 md:p-8 overflow-hidden group">
+                    <div class="w-14 h-14 bg-rose-500/20 rounded-xl flex items-center justify-center mb-6 border border-rose-500/50">
+                        <i class="fas fa-database text-2xl text-rose-400"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3 text-white">Stored XSS</h3>
+                    <p class="text-slate-400 text-sm mb-4 leading-relaxed">Payload is permanently stored on the target server (e.g., in a database). The victim retrieves and executes the malicious script when viewing the affected page.</p>
+                    <div class="flex items-center gap-2 text-xs font-code text-slate-500 mt-auto">
+                        <i class="fas fa-network-wired"></i> Client <i class="fas fa-arrows-alt-h text-slate-600"></i> Server <i class="fas fa-arrows-alt-h text-slate-600"></i> DB
+                    </div>
+                    
+                    <!-- Hover Overlay -->
+                    <div class="overlay absolute inset-0 bg-slate-900/90 flex flex-col items-center justify-center p-6 text-center z-10">
+                        <h4 class="text-xl font-bold text-rose-400 mb-2">Stored XSS</h4>
+                        <p class="text-sm text-slate-300 mb-6">Wanna see simulation?</p>
+                        <button onclick="startSimulation('stored')" class="px-6 py-2 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-lg transition-colors shadow-[0_0_15px_rgba(225,29,72,0.5)]">
+                            Launch Lab <i class="fas fa-rocket ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- DOM XSS Card -->
+                <div class="xss-card relative bg-slate-800/80 border border-slate-700 rounded-2xl p-6 md:p-8 overflow-hidden group">
+                    <div class="w-14 h-14 bg-emerald-500/20 rounded-xl flex items-center justify-center mb-6 border border-emerald-500/50">
+                        <i class="fas fa-code text-2xl text-emerald-400"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3 text-white">DOM-based XSS</h3>
+                    <p class="text-slate-400 text-sm mb-4 leading-relaxed">Vulnerability exists in client-side code rather than server-side. Payload executes through modification of the DOM environment in the victim's browser.</p>
+                    <div class="flex items-center gap-2 text-xs font-code text-slate-500 mt-auto">
+                        <i class="fas fa-window-maximize"></i> Browser <i class="fas fa-arrow-right text-slate-600"></i> JS Execution
+                    </div>
+                    
+                    <!-- Hover Overlay -->
+                    <div class="overlay absolute inset-0 bg-slate-900/90 flex flex-col items-center justify-center p-6 text-center z-10">
+                        <h4 class="text-xl font-bold text-emerald-400 mb-2">DOM XSS</h4>
+                        <p class="text-sm text-slate-300 mb-6">Wanna see simulation?</p>
+                        <button onclick="startSimulation('dom')" class="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg transition-colors shadow-[0_0_15px_rgba(16,185,129,0.5)]">
+                            Launch Lab <i class="fas fa-rocket ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ================= SIMULATION SCENE ================= -->
+        <div id="scene-sim" class="w-full max-w-[1400px] hidden flex-col gap-4 md:gap-6 pb-10 mx-auto opacity-0 transition-opacity duration-500">
+            
+            <div class="flex justify-between items-center text-sm md:text-base font-bold px-2 py-1 border-b border-slate-800 text-slate-400" id="sim-title-bar">
+                <!-- Injected dynamically -->
+            </div>
+
+            <!-- Top section: Visualizer Map -->
+            <div class="flex-none h-32 md:h-48 bg-slate-900/60 rounded-2xl border border-slate-800 p-3 md:p-6 relative flex items-center justify-between shadow-inner" id="visualizer-map">
+                
+                <!-- Client Node -->
+                <div id="node-client" class="bg-slate-800 border-2 border-slate-600 rounded-xl p-2 md:p-4 flex flex-col items-center w-20 md:w-36 z-10 transition-all duration-300 shrink-0">
+                    <i class="fas fa-laptop-code text-2xl md:text-4xl text-slate-300 mb-2" id="icon-client"></i>
+                    <h3 class="font-bold text-[10px] md:text-xs text-center leading-tight">Victim's Browser</h3>
+                </div>
+
+                <!-- Path 1: Client to Server -->
+                <div class="flex-grow h-1 bg-slate-700 mx-2 md:mx-4 relative rounded-full z-0" id="anim-path-1">
+                    <div id="laser-packet-1" class="absolute top-1/2 -translate-y-1/2 left-0 w-8 md:w-12 h-3 md:h-4 rounded-full bg-sky-400 shadow-[0_0_20px_#38bdf8] hidden z-20"></div>
+                </div>
+
+                <!-- Server Node -->
+                <div id="node-server" class="bg-slate-800 border-2 border-slate-600 rounded-xl p-2 md:p-4 flex flex-col items-center w-20 md:w-36 z-10 transition-all duration-300 shrink-0">
+                    <i class="fas fa-server text-2xl md:text-4xl text-slate-300 mb-2" id="icon-server"></i>
+                    <h3 class="font-bold text-[10px] md:text-xs text-center leading-tight">Web Server</h3>
+                </div>
+
+                <!-- Path 2: Server to DB (Hidden by default) -->
+                <div class="h-1 bg-slate-700 mx-2 md:mx-4 relative rounded-full hidden transition-all duration-500 z-0" id="anim-path-2">
+                    <div id="laser-packet-2" class="absolute top-1/2 -translate-y-1/2 left-0 w-6 md:w-10 h-2 md:h-3 rounded-full bg-purple-400 shadow-[0_0_15px_#a855f7] hidden z-20"></div>
+                </div>
+
+                <!-- DB Node (Hidden by default) -->
+                <div id="node-db" class="bg-slate-800 border-2 border-slate-600 rounded-xl p-2 md:p-4 flex flex-col items-center w-20 md:w-36 z-10 transition-all duration-300 shrink-0 hidden opacity-0">
+                    <i class="fas fa-database text-2xl md:text-4xl text-slate-300 mb-2" id="icon-db"></i>
+                    <h3 class="font-bold text-[10px] md:text-xs text-center leading-tight">Database</h3>
+                </div>
+
+            </div>
+
+            <!-- Bottom section: Split view (Responsive Stack) -->
+            <div class="flex-grow flex flex-col lg:flex-row gap-4 md:gap-6 min-h-[550px]">
+                
+                <!-- Left: Interactive Browser -->
+                <div class="w-full lg:w-1/2 flex flex-col bg-slate-900/80 rounded-2xl border border-slate-700 overflow-hidden shadow-xl min-h-[500px]">
+                    <div class="bg-slate-800 p-2 md:p-3 text-sm font-bold flex items-center justify-between border-b border-slate-700 text-slate-300 shrink-0">
+                        <div>
+                            <i class="fab fa-chrome mr-2 text-sky-400"></i> Browser View
+                        </div>
+                        <div id="browser-controls" class="hidden">
+                            <button onclick="reloadBrowser()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 px-2 py-1 rounded text-xs transition-colors border border-slate-600 shadow-sm" title="Reload Page">
+                                <i class="fas fa-sync-alt"></i> Reload
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-grow p-3 md:p-5 bg-slate-200 relative flex flex-col h-full z-0">
                         <div class="browser-window relative flex-grow" id="browser-ui">
                             
                             <div class="browser-header shrink-0">
@@ -217,17 +236,17 @@
                                 </div>
                                 <div class="bg-white border border-slate-300 rounded-md px-2 py-1 md:px-3 md:py-1.5 text-xs md:text-sm text-slate-600 flex-grow font-code flex items-center shadow-inner overflow-hidden whitespace-nowrap">
                                     <i class="fas fa-lock mr-2 text-emerald-500"></i>
-                                    <span id="browser-url" class="truncate">https://vuln-shop.com/search</span>
+                                    <span id="browser-url" class="truncate">https://vuln-shop.com/</span>
                                 </div>
                             </div>
                             
-                            <div class="p-4 md:p-6 relative flex-grow flex flex-col overflow-y-auto" id="browser-content-area">
+                            <div class="p-4 md:p-6 relative flex-grow flex flex-col overflow-y-auto bg-white" id="browser-content-area">
+                                <!-- Dynamic Content goes here based on selected module -->
                                 
-                                <div id="render-overlay" class="render-overlay hidden rounded-b-xl">
+                                <div id="render-overlay" class="render-overlay hidden rounded-b-xl z-40">
                                     <div id="render-scanline" class="render-scanline"></div>
                                     <i class="fas fa-cog fa-spin text-3xl md:text-4xl text-sky-400 mb-3 md:mb-4" id="render-spinner"></i>
                                     <h3 class="text-lg md:text-xl font-bold text-white tracking-widest uppercase text-center" id="render-text">Rendering DOM...</h3>
-                                    <p class="text-slate-400 text-xs md:text-sm mt-2 font-code" id="render-subtext">Executing scripts...</p>
                                 </div>
 
                                 <div id="fake-alert" class="hidden absolute inset-0 bg-slate-900/40 backdrop-blur-sm flex justify-center items-start pt-10 md:pt-16 z-50 rounded-b-xl">
@@ -241,100 +260,59 @@
                                         </div>
                                     </div>
                                 </div>
-
-                                <h1 class="text-xl md:text-3xl font-black text-slate-800 mb-1 md:mb-2">Product Search</h1>
-                                <p class="text-slate-500 mb-4 md:mb-6 text-xs md:text-sm border-b pb-3 md:pb-4">Find what you're looking for in our catalog.</p>
                                 
-                                <div class="flex flex-col sm:flex-row gap-2 mb-6 md:mb-8 relative" id="search-box-container">
-                                    <div class="relative flex-grow">
-                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <i class="fas fa-search text-slate-400"></i>
-                                        </div>
-                                        <input type="text" id="search-input" class="block w-full pl-10 pr-3 py-2 md:py-3 border-2 border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-0 focus:border-sky-500 transition-colors text-sm md:text-lg" placeholder="Type here...">
-                                    </div>
-                                    <button id="btn-search" class="bg-indigo-600 text-white font-bold px-6 py-2 md:py-3 rounded-lg hover:bg-indigo-700 transition-colors shadow-md flex-shrink-0 text-sm md:text-base">
-                                        Search
-                                    </button>
-                                </div>
+                                <!-- DYNAMIC INJECTION TARGET -->
+                                <div id="module-content" class="flex-grow flex flex-col relative z-0"></div>
 
-                                <div id="search-results-area" class="hidden bg-slate-50 p-4 md:p-6 border-l-4 border-indigo-500 rounded shadow-sm text-slate-800 mt-2 md:mt-4">
-                                    <h3 class="text-xs md:text-sm font-bold text-slate-500 uppercase tracking-wider mb-2 md:mb-3">Search Results For:</h3>
-                                    <div id="injected-content" class="text-base md:text-xl font-medium text-slate-900 break-all bg-white p-2 md:p-3 border border-slate-200 rounded"></div>
-                                </div>
-
-                                <div class="mt-auto pt-4 md:pt-6 border-t border-slate-200 shrink-0" id="payload-dock">
-                                    <p class="text-[10px] md:text-xs text-slate-500 font-bold uppercase mb-2 md:mb-3">Inject Test Payloads:</p>
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-3">
-                                        <button class="payload-btn text-left text-xs md:text-sm bg-white hover:bg-slate-50 border border-slate-300 p-2 rounded shadow-sm transition-all" data-type="normal" data-payload="Laptop Core i9">
-                                            <i class="fas fa-font text-slate-400 w-4 md:w-5"></i>Normal Text
-                                        </button>
-                                        <button class="payload-btn text-left text-xs md:text-sm bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 p-2 rounded shadow-sm transition-all font-code truncate" data-type="malicious" data-payload="<script>alert('HACKED!')</script>">
-                                            <i class="fas fa-bug w-4 md:w-5"></i>Basic Script
-                                        </button>
-                                        <button class="payload-btn text-left text-xs md:text-sm bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 p-2 rounded shadow-sm transition-all font-code truncate" data-type="malicious" data-payload="<img src='x' onerror='alert(document.cookie)'>">
-                                            <i class="fas fa-image w-4 md:w-5"></i>Img OnError
-                                        </button>
-                                        <button class="payload-btn text-left text-xs md:text-sm bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 p-2 rounded shadow-sm transition-all font-code truncate" data-type="malicious" data-payload="<svg onload='alert(1)'>">
-                                            <i class="fas fa-code w-4 md:w-5"></i>SVG OnLoad
-                                        </button>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
+                <!-- Right: Backend & Inspector -->
                 <div class="w-full lg:w-1/2 flex flex-col gap-4 md:gap-6">
                     
-                    <div class="bg-slate-900/80 rounded-2xl border border-slate-700 overflow-hidden shadow-xl flex flex-col min-h-[250px] lg:h-1/2 transition-all duration-300" id="backend-panel">
-                        <div class="bg-slate-800 p-2 md:p-3 text-xs md:text-sm font-bold flex items-center border-b border-slate-700 text-slate-300 justify-between shrink-0">
-                            <span><i class="fas fa-server mr-2 text-emerald-400"></i> Backend Code (PHP)</span>
-                            <span id="backend-status" class="text-[10px] md:text-xs bg-slate-700 px-2 py-0.5 md:py-1 rounded text-slate-400">Idle</span>
+                    <!-- Code Execution Panel -->
+                    <div class="bg-slate-900/80 rounded-2xl border border-slate-700 overflow-hidden shadow-xl flex flex-col min-h-[250px] lg:h-1/2 transition-all duration-300 z-0" id="code-panel">
+                        <div class="bg-slate-800 p-2 md:p-3 text-xs md:text-sm font-bold flex items-center border-b border-slate-700 text-slate-300 justify-between shrink-0 z-10 relative">
+                            <span id="code-panel-title"><i class="fas fa-server mr-2 text-emerald-400"></i> Backend Code (PHP)</span>
+                            <span id="code-status" class="text-[10px] md:text-xs bg-slate-700 px-2 py-0.5 md:py-1 rounded text-slate-400">Idle</span>
                         </div>
-                        <div class="p-3 md:p-4 flex-grow relative overflow-auto bg-[#0d1117]">
-                            <pre class="font-code text-xs md:text-sm leading-relaxed text-slate-300">
-<span class="text-purple-400">&lt;?php</span>
-<span class="text-slate-500">// 1. Retrieve user input from URL</span>
-<span class="text-sky-300">$search_query</span> = <span class="text-amber-300">$_GET</span>[<span class="text-green-300">'q'</span>]; 
-
-<span class="text-slate-500">// 2. Generate HTML skeleton</span>
-<span class="text-sky-300">$html</span> = <span class="text-green-300">"&lt;div id='injected-content'&gt;"</span>;
-
-<span class="text-slate-500">// 3. Render content directly to DOM</span>
-<span id="vuln-line" class="px-1 md:px-2 py-1 rounded transition-colors duration-300 relative inline-block w-full"><span class="text-sky-300">$html</span> .= <span class="text-sky-300">$search_query</span>; <span class="text-red-400 italic font-bold ml-2 md:ml-4 whitespace-nowrap">&lt;-- VULN!</span></span>
-
-<span class="text-sky-300">$html</span> .= <span class="text-green-300">"&lt;/div&gt;"</span>;
-
-<span class="text-slate-500">// 4. Send response to browser</span>
-<span class="text-purple-400">echo</span> <span class="text-sky-300">$html</span>;
-<span class="text-purple-400">?&gt;</span></pre>
-                            <div id="code-highlighter" class="absolute left-0 right-0 h-6 md:h-8 bg-emerald-500/20 border-l-4 border-emerald-400 hidden top-[4rem] md:top-[4.5rem]"></div>
+                        <div class="p-3 md:p-4 flex-grow relative overflow-auto bg-[#0d1117] z-0" id="code-container">
+                            <pre class="font-code text-xs md:text-sm leading-relaxed text-slate-300 relative z-10" id="code-display"></pre>
+                            <div id="code-highlighter" class="absolute left-0 right-0 h-6 md:h-7 bg-emerald-500/20 border-l-4 border-emerald-400 hidden top-[4rem] z-0 pointer-events-none"></div>
                         </div>
                     </div>
 
+                    <!-- Network Log Panel -->
                     <div class="bg-slate-900/80 rounded-2xl border border-slate-700 overflow-hidden shadow-xl flex flex-col min-h-[250px] lg:h-1/2">
-                        <div class="bg-slate-800 p-2 md:p-3 text-xs md:text-sm font-bold flex items-center border-b border-slate-700 text-slate-300 shrink-0">
-                            <i class="fas fa-network-wired mr-2 text-indigo-400"></i> Network Inspector
+                        <div class="bg-slate-800 p-2 md:p-3 text-xs md:text-sm font-bold flex items-center justify-between border-b border-slate-700 text-slate-300 shrink-0">
+                            <div>
+                                <i class="fas fa-network-wired mr-2 text-indigo-400"></i> Network Inspector
+                            </div>
+                            <button onclick="clearNetworkLogs()" class="text-slate-400 hover:text-rose-400 transition-colors px-2 py-1 rounded bg-slate-700 border border-slate-600 hover:border-rose-500 text-[10px]" title="Clear Logs">
+                                <i class="fas fa-trash-alt"></i> Clear
+                            </button>
                         </div>
                         <div class="p-3 md:p-4 flex-grow overflow-auto flex flex-col gap-2 md:gap-3" id="network-log">
                             <div class="text-center text-slate-500 mt-6 md:mt-10 font-code text-xs md:text-sm" id="empty-log-msg">
                                 <i class="fas fa-satellite-dish text-xl md:text-2xl mb-2 block"></i>
                                 Waiting for traffic...
                             </div>
-                            </div>
+                        </div>
                     </div>
 
                 </div>
-
             </div>
         </div>
     </main>
 
+    <!-- Network Modal -->
     <div id="network-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-sm hidden z-[200] flex justify-center items-center p-2 md:p-6 opacity-0 transition-opacity duration-300">
         <div class="bg-slate-800 border-2 border-slate-600 rounded-xl shadow-[0_0_50px_rgba(0,0,0,0.8)] w-full max-w-5xl max-h-[95vh] flex flex-col transform scale-95 transition-transform duration-300" id="network-modal-card">
             <div class="bg-slate-900 px-4 py-3 md:px-6 md:py-4 border-b border-slate-700 flex justify-between items-center rounded-t-xl shrink-0">
-                <h3 id="network-modal-title" class="font-bold text-base md:text-xl text-sky-400 truncate"><i class="fas fa-search-plus mr-2"></i>Network Details</h3>
-                <button id="btn-close-modal" class="text-slate-400 hover:text-rose-400 transition-colors focus:outline-none ml-2">
+                <h3 id="network-modal-title" class="font-bold text-base md:text-xl text-sky-400 truncate">Details</h3>
+                <button onclick="closeNetworkModal()" class="text-slate-400 hover:text-rose-400 transition-colors focus:outline-none ml-2">
                     <i class="fas fa-times text-xl md:text-2xl"></i>
                 </button>
             </div>
@@ -344,142 +322,149 @@
         </div>
     </div>
 
+    <!-- MODULE CONFIGURATIONS (HTML TEMPLATES & CODE LOGIC) -->
     <script>
-        // UI Elements
-        const sceneIntro = document.getElementById('scene-intro');
-        const sceneSim = document.getElementById('scene-sim');
-        const btnStart = document.getElementById('btn-start');
-        const btnPause = document.getElementById('btn-pause');
-        const simStatus = document.getElementById('sim-status');
-        const cardPauseIndicator = document.getElementById('card-pause-indicator');
-        
-        // Sim Inputs
-        const searchBoxContainer = document.getElementById('search-box-container');
-        const searchInput = document.getElementById('search-input');
-        const btnSearch = document.getElementById('btn-search');
-        const payloadBtns = document.querySelectorAll('.payload-btn');
-        
-        // Browser Visuals
-        const browserUrl = document.getElementById('browser-url');
-        const searchResultsArea = document.getElementById('search-results-area');
-        const injectedContent = document.getElementById('injected-content');
-        const renderOverlay = document.getElementById('render-overlay');
-        const renderScanline = document.getElementById('render-scanline');
-        const renderSpinner = document.getElementById('render-spinner');
-        const renderText = document.getElementById('render-text');
-        const renderSubtext = document.getElementById('render-subtext');
-        
-        // Alert Visuals
-        const fakeAlert = document.getElementById('fake-alert');
-        const alertMsg = document.getElementById('alert-msg');
-        const btnOkAlert = document.getElementById('btn-ok-alert');
+        const modules = {
+            reflected: {
+                title: 'Reflected XSS Module',
+                color: 'sky',
+                icon: 'fa-reply',
+                url: 'https://vuln-shop.com/search',
+                hasDB: false,
+                codeTitle: '<i class="fas fa-server mr-2 text-sky-400"></i> Backend (PHP)',
+                htmlTemplate: `
+                    <h1 class="text-xl md:text-3xl font-black text-slate-800 mb-1 md:mb-2">Product Search</h1>
+                    <p class="text-slate-500 mb-4 md:mb-6 text-xs md:text-sm border-b pb-3">Find what you're looking for.</p>
+                    <div class="flex flex-col sm:flex-row gap-2 mb-4 relative" id="input-container">
+                        <div class="relative flex-grow">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i class="fas fa-search text-slate-400"></i></div>
+                            <input type="text" id="payload-input" class="block w-full pl-10 pr-3 py-2 border-2 border-slate-300 rounded-lg focus:border-sky-500 outline-none text-sm" placeholder="Search query...">
+                        </div>
+                        <button onclick="executeFlow()" class="bg-sky-600 text-white font-bold px-6 py-2 rounded-lg hover:bg-sky-700 transition-colors shadow-md text-sm">Search</button>
+                    </div>
+                    <div id="dynamic-area" class="hidden bg-slate-50 p-4 border-l-4 border-sky-500 rounded shadow-sm mt-2">
+                        <h3 class="text-xs font-bold text-slate-500 uppercase mb-2">Results For:</h3>
+                        <div id="injected-content" class="text-sm font-medium text-slate-900 break-all bg-white p-2 border border-slate-200 rounded"></div>
+                    </div>
+                    <div class="mt-auto pt-4 border-t border-slate-200" id="payload-dock">
+                        <p class="text-[10px] text-slate-500 font-bold uppercase mb-2">Quick Payloads:</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <button onclick="setPayload('Laptop')" class="text-left text-xs bg-white border border-slate-300 p-1.5 rounded hover:bg-slate-50 transition-colors"><i class="fas fa-font text-slate-400 w-4"></i> Normal Text</button>
+                            <button onclick="setPayload('<script>alert(\\'Reflected XSS Executed!\\')<\\/script>')" class="text-left text-xs bg-rose-50 text-rose-700 border border-rose-200 p-1.5 rounded font-code truncate hover:bg-rose-100 transition-colors"><i class="fas fa-bug w-4"></i> Basic Script</button>
+                        </div>
+                    </div>
+                `,
+                codeTemplate: `<span class="text-purple-400">&lt;?php</span>
+<span class="text-slate-500">// 1. Get query from URL</span>
+<span class="text-sky-300">$search</span> = <span class="text-amber-300">$_GET</span>[<span class="text-green-300">'q'</span>]; 
 
-        // Network & Animation Elements
-        const dataCard = document.getElementById('data-card');
-        const dataCardHeader = document.getElementById('data-card-header');
-        const dataCardTitle = document.getElementById('data-card-title');
-        const dataCardCode = document.getElementById('data-card-code');
-        
-        const nodeClient = document.getElementById('node-client');
-        const iconClient = document.getElementById('icon-client');
-        const nodeServer = document.getElementById('node-server');
-        const iconServer = document.getElementById('icon-server');
-        
-        const laserPacket = document.getElementById('laser-packet');
-        const animPath = document.getElementById('anim-path');
-        
-        const backendPanel = document.getElementById('backend-panel');
-        const backendStatus = document.getElementById('backend-status');
-        const vulnLine = document.getElementById('vuln-line');
-        const codeHighlighter = document.getElementById('code-highlighter');
-        const networkLog = document.getElementById('network-log');
-        const emptyLogMsg = document.getElementById('empty-log-msg');
+<span class="text-slate-500">// 2. Render directly to DOM</span>
+<span id="vuln-line" class="px-1 py-1 rounded transition-colors inline-block w-full relative z-10"><span class="text-purple-400">echo</span> <span class="text-green-300">"&lt;div&gt;"</span> . <span class="text-sky-300">$search</span> . <span class="text-green-300">"&lt;/div&gt;"</span>; <span class="text-red-400 italic font-bold ml-2">&lt;-- VULNERABLE</span></span>
+<span class="text-purple-400">?&gt;</span>`
+            },
+            stored: {
+                title: 'Stored XSS Module',
+                color: 'rose',
+                icon: 'fa-database',
+                url: 'https://vuln-shop.com/product/123',
+                hasDB: true,
+                codeTitle: '<i class="fas fa-server mr-2 text-rose-400"></i> Backend (PHP/SQL)',
+                htmlTemplate: `
+                    <h1 class="text-xl md:text-2xl font-black text-slate-800 mb-1">Product Reviews</h1>
+                    <p class="text-slate-500 mb-4 text-xs border-b pb-3">Read or leave a review.</p>
+                    
+                    <div id="dynamic-area" class="flex flex-col gap-2 mb-4">
+                        <!-- Existing safe comment -->
+                        <div class="bg-slate-50 p-3 rounded border border-slate-200">
+                            <p class="font-bold text-xs text-slate-700">Alice</p>
+                            <p class="text-sm">Great product! Highly recommend.</p>
+                        </div>
+                        <div id="injected-content-container" class="hidden bg-rose-50 p-3 rounded border border-rose-200 transition-all duration-300">
+                            <p class="font-bold text-xs text-rose-800">Guest (Attacker)</p>
+                            <div id="injected-content" class="text-sm font-medium text-slate-900 break-all"></div>
+                        </div>
+                    </div>
 
-        // Modal Elements
-        const networkModal = document.getElementById('network-modal');
-        const networkModalCard = document.getElementById('network-modal-card');
-        const networkModalTitle = document.getElementById('network-modal-title');
-        const networkModalContent = document.getElementById('network-modal-content');
-        const btnCloseModal = document.getElementById('btn-close-modal');
+                    <div class="bg-slate-100 p-3 rounded-lg border border-slate-300 mt-auto" id="input-container">
+                        <h3 class="text-xs font-bold text-slate-600 mb-2">Leave a Review</h3>
+                        <textarea id="payload-input" class="w-full p-2 border border-slate-300 rounded focus:border-rose-500 outline-none text-sm mb-2 h-16" placeholder="Write your review..."></textarea>
+                        <button onclick="executeFlow()" class="bg-rose-600 text-white font-bold px-4 py-1.5 rounded hover:bg-rose-700 transition-colors shadow text-xs w-full sm:w-auto">Post Review</button>
+                    </div>
+                    <div class="mt-2" id="payload-dock">
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="setPayload('Looks good.')" class="text-left text-xs bg-white border border-slate-300 p-1.5 rounded hover:bg-slate-50 transition-colors"><i class="fas fa-font text-slate-400 w-4"></i> Safe</button>
+                            <button onclick="setPayload('<img src=x onerror=alert(\\'Stored XSS Executed!\\')>')" class="text-left text-[10px] bg-rose-50 text-rose-700 border border-rose-200 p-1.5 rounded font-code truncate hover:bg-rose-100 transition-colors"><i class="fas fa-image w-3"></i> Img OnError</button>
+                        </div>
+                    </div>
+                `,
+                codeTemplate: `<span class="text-purple-400">&lt;?php</span>
+<span class="text-slate-500">// --- 1. POST Request (Save Review) ---</span>
+<span class="text-sky-300">$review</span> = <span class="text-amber-300">$_POST</span>[<span class="text-green-300">'review'</span>];
+<span id="vuln-line-1" class="px-1 rounded inline-block w-full relative z-10"><span class="text-sky-300">$db</span>->query(<span class="text-green-300">"INSERT INTO reviews (text) VALUES ('</span><span class="text-sky-300">$review</span><span class="text-green-300">')"</span>); <span class="text-red-400 italic font-bold text-[10px] sm:text-xs ml-1 sm:ml-2">&lt;- NO SANITIZATION</span></span>
 
-        // Global State
+<span class="text-slate-500 mt-2 block">// --- 2. GET Request (Show Reviews) ---</span>
+<span class="text-sky-300">$rows</span> = <span class="text-sky-300">$db</span>->query(<span class="text-green-300">"SELECT text FROM reviews"</span>);
+<span class="text-purple-400">foreach</span>(<span class="text-sky-300">$rows</span> <span class="text-purple-400">as</span> <span class="text-sky-300">$row</span>) {
+<span id="vuln-line-2" class="px-1 rounded inline-block w-full relative z-10">  <span class="text-purple-400">echo</span> <span class="text-green-300">"&lt;div&gt;"</span> . <span class="text-sky-300">$row</span>[<span class="text-green-300">'text'</span>] . <span class="text-green-300">"&lt;/div&gt;"</span>; <span class="text-red-400 italic font-bold text-[10px] sm:text-xs ml-1 sm:ml-2">&lt;- EXECUTION</span></span>
+}
+<span class="text-purple-400">?&gt;</span>`
+            },
+            dom: {
+                title: 'DOM-based XSS Module',
+                color: 'emerald',
+                icon: 'fa-code',
+                url: 'https://vuln-shop.com/profile#',
+                hasDB: false,
+                codeTitle: '<i class="fab fa-js text-yellow-400 mr-2"></i> Frontend (JavaScript)',
+                htmlTemplate: `
+                    <h1 class="text-xl md:text-2xl font-black text-slate-800 mb-1">User Dashboard</h1>
+                    <p class="text-slate-500 mb-4 text-xs border-b pb-3">Client-side rendering via URL Hash.</p>
+                    
+                    <div id="dynamic-area" class="bg-emerald-50 p-4 border border-emerald-200 rounded text-center mb-6">
+                        <p class="text-sm text-slate-600 mb-2">Welcome message based on URL:</p>
+                        <h2 id="injected-content" class="text-lg font-bold text-slate-800 break-all transition-all duration-300">Welcome, Guest!</h2>
+                    </div>
+
+                    <div class="mt-auto" id="input-container">
+                        <p class="text-[10px] text-slate-500 font-bold uppercase mb-2">Modify URL Hash (Fragment):</p>
+                        <div class="flex flex-col gap-2">
+                            <input type="text" id="payload-input" class="w-full p-2 border border-slate-300 rounded focus:border-emerald-500 outline-none text-sm font-code" value="Admin">
+                            <button onclick="executeFlow()" class="bg-emerald-600 text-white font-bold px-4 py-2 rounded hover:bg-emerald-700 transition-colors shadow text-sm w-full">Update URL Hash</button>
+                        </div>
+                    </div>
+                    <div class="mt-2" id="payload-dock">
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="setPayload('SuperUser')" class="text-left text-xs bg-white border border-slate-300 p-1.5 rounded hover:bg-slate-50 transition-colors"><i class="fas fa-font text-slate-400 w-4"></i> Safe Hash</button>
+                            <button onclick="setPayload('<img src=x onerror=alert(\\'DOM XSS Executed!\\')>')" class="text-left text-[10px] bg-rose-50 text-rose-700 border border-rose-200 p-1.5 rounded font-code truncate hover:bg-rose-100 transition-colors"><i class="fas fa-bug w-3"></i> Break DOM</button>
+                        </div>
+                    </div>
+                `,
+                codeTemplate: `<span class="text-slate-500">// Client-side JavaScript executing in Browser</span>
+<span class="text-purple-400">window</span>.onload = <span class="text-sky-300">function</span>() {
+  <span class="text-slate-500">// 1. Extract hash from URL (e.g., #Admin)</span>
+  <span class="text-purple-400">let</span> hash = <span class="text-purple-400">window</span>.location.hash.substring(<span class="text-amber-300">1</span>);
+  
+  <span class="text-purple-400">if</span> (hash) {
+    <span class="text-purple-400">let</span> decoded = <span class="text-sky-300">decodeURIComponent</span>(hash);
+    <span class="text-slate-500">// 2. Write directly to DOM via innerHTML</span>
+<span id="vuln-line" class="px-1 py-1 rounded transition-colors inline-block w-full relative z-10">    <span class="text-purple-400">document</span>.getElementById(<span class="text-green-300">'msg'</span>).innerHTML = decoded; <span class="text-red-400 italic font-bold ml-1 text-[10px] sm:text-xs sm:ml-2">&lt;- VULN</span></span>
+  }
+};`
+            }
+        };
+
+        // --- Core App State & Logic ---
+        let currentMode = null;
         let isAnimating = false;
         let isPaused = false;
         let pauseResolver = null;
         let activeAnimations = [];
+        let storedPayload = null; // Store payload for Stored XSS reload
 
-        // Helpers
+        // UI Elements Cache
+        const el = id => document.getElementById(id);
         const escapeHTML = str => str.replace(/[&<>'"]/g, tag => ({'&': '&amp;','<': '&lt;','>': '&gt;',"'": '&#39;','"': '&quot;'}[tag] || tag));
         const sleep = ms => new Promise(res => setTimeout(res, ms));
-
-        // Start App
-        btnStart.addEventListener('click', () => {
-            sceneIntro.classList.replace('fade-in', 'fade-out');
-            setTimeout(() => {
-                sceneIntro.classList.add('hidden');
-                sceneSim.classList.remove('hidden');
-                sceneSim.classList.add('flex');
-                searchInput.focus();
-                btnPause.classList.remove('hidden');
-            }, 500);
-        });
-
-        // Event Listeners for Input
-        payloadBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                if(isAnimating) return;
-                searchInput.value = e.currentTarget.getAttribute('data-payload');
-                triggerExtremeFlow();
-            });
-        });
-
-        btnSearch.addEventListener('click', () => { if(!isAnimating && searchInput.value) triggerExtremeFlow(); });
-        searchInput.addEventListener('keypress', (e) => { if(e.key === 'Enter' && !isAnimating && searchInput.value) triggerExtremeFlow(); });
-        btnOkAlert.addEventListener('click', () => fakeAlert.classList.add('hidden'));
-
-        // Modal Listeners
-        btnCloseModal.addEventListener('click', closeNetworkModal);
-        networkModal.addEventListener('click', (e) => {
-            if(e.target === networkModal) closeNetworkModal();
-        });
-
-        // Global Pause Mechanism
-        btnPause.addEventListener('click', togglePause);
-        document.addEventListener('keydown', (e) => {
-            if ((e.code === 'Space') && isAnimating && !networkModal.classList.contains('hidden') === false && document.activeElement !== searchInput) {
-                e.preventDefault();
-                togglePause();
-            }
-        });
-
-        function togglePause() {
-            if (!isAnimating) return;
-            isPaused = !isPaused;
-            
-            if (isPaused) {
-                btnPause.innerHTML = `<i class="fas fa-play mr-1 md:mr-2"></i> Play (Space)`;
-                btnPause.classList.replace('bg-slate-800', 'bg-amber-600');
-                btnPause.classList.replace('border-slate-600', 'border-amber-500');
-                simStatus.innerText = "PAUSED";
-                simStatus.classList.replace('text-sky-400', 'text-amber-400');
-                simStatus.classList.replace('animate-pulse', 'animate-none');
-                cardPauseIndicator.classList.remove('hidden');
-                activeAnimations.forEach(a => a.pause());
-            } else {
-                btnPause.innerHTML = `<i class="fas fa-pause mr-1 md:mr-2"></i> Pause (Space)`;
-                btnPause.classList.replace('bg-amber-600', 'bg-slate-800');
-                btnPause.classList.replace('border-amber-500', 'border-slate-600');
-                simStatus.innerText = "Running Simulation...";
-                simStatus.classList.replace('text-amber-400', 'text-sky-400');
-                simStatus.classList.replace('animate-none', 'animate-pulse');
-                cardPauseIndicator.classList.add('hidden');
-                activeAnimations.forEach(a => a.play());
-                if (pauseResolver) {
-                    pauseResolver();
-                    pauseResolver = null;
-                }
-            }
-        }
 
         async function waitIfPaused() {
             if (isPaused) {
@@ -498,14 +483,448 @@
             await waitIfPaused();
         }
 
-        function openNetworkModal(title, content, isMalicious) {
-            networkModalTitle.innerHTML = `<i class="fas fa-file-code mr-2"></i>${title}`;
-            networkModalTitle.className = `font-bold text-base md:text-xl truncate ${isMalicious ? 'text-rose-400' : 'text-sky-400'}`;
-            networkModalCard.className = `bg-slate-800 border-2 ${isMalicious ? 'border-rose-500 shadow-[0_0_30px_rgba(225,29,72,0.3)] md:shadow-[0_0_40px_rgba(225,29,72,0.3)]' : 'border-sky-500 shadow-[0_0_30px_rgba(56,189,248,0.3)] md:shadow-[0_0_40px_rgba(56,189,248,0.3)]'} rounded-xl w-full max-w-5xl max-h-[95vh] flex flex-col transform scale-100 transition-transform duration-300`;
+        function startSimulation(modeId) {
+            currentMode = modeId;
+            const config = modules[modeId];
+            storedPayload = null;
+
+            // Setup UI based on config
+            el('sim-title-bar').innerHTML = `<span class="text-${config.color}-400"><i class="fas ${config.icon} mr-2"></i>${config.title}</span>`;
+            el('browser-url').innerHTML = escapeHTML(config.url);
+            el('module-content').innerHTML = config.htmlTemplate;
+            el('code-panel-title').innerHTML = config.codeTitle;
+            el('code-display').innerHTML = config.codeTemplate;
+            el('code-panel').className = `bg-slate-900/80 rounded-2xl border border-slate-700 overflow-hidden shadow-xl flex flex-col min-h-[250px] lg:h-1/2 transition-all duration-300 z-0`;
             
-            // Highlight payload
-            const payload = searchInput.value;
+            // Show Reload button only for Stored XSS
+            if(modeId === 'stored') {
+                el('browser-controls').classList.remove('hidden');
+            } else {
+                el('browser-controls').classList.add('hidden');
+            }
+            
+            // Adjust Map Nodes
+            const path2 = el('anim-path-2');
+            const nodeDB = el('node-db');
+            if(config.hasDB) {
+                path2.classList.remove('hidden');
+                nodeDB.classList.remove('hidden');
+                setTimeout(() => {
+                    path2.style.flexGrow = '1';
+                    nodeDB.classList.remove('opacity-0');
+                }, 50);
+            } else {
+                nodeDB.classList.add('opacity-0');
+                path2.style.flexGrow = '0';
+                setTimeout(() => {
+                    path2.classList.add('hidden');
+                    nodeDB.classList.add('hidden');
+                }, 300);
+            }
+
+            // Clear logs on new module
+            clearNetworkLogs();
+            el('sim-status').innerText = "Waiting for Input...";
+            el('sim-status').className = "text-slate-400 animate-pulse";
+            el('fake-alert').classList.add('hidden');
+
+            // View Transition
+            el('scene-home').classList.add('hidden');
+            el('scene-sim').classList.remove('hidden');
+            setTimeout(() => {
+                el('scene-sim').classList.remove('opacity-0');
+                el('header-controls').classList.remove('hidden');
+            }, 50);
+        }
+
+        function goHome() {
+            if(isAnimating) return;
+            el('scene-sim').classList.add('opacity-0');
+            setTimeout(() => {
+                el('scene-sim').classList.add('hidden');
+                el('header-controls').classList.add('hidden');
+                el('scene-home').classList.remove('hidden');
+            }, 500);
+        }
+
+        function setPayload(text) {
+            if(isAnimating) return;
+            el('payload-input').value = text;
+        }
+
+        function clearNetworkLogs() {
+            el('network-log').innerHTML = `<div class="text-center text-slate-500 mt-6 font-code text-sm" id="empty-log-msg"><i class="fas fa-satellite-dish text-2xl mb-2 block"></i> Waiting for traffic...</div>`;
+        }
+
+        // --- Execution Flow Router ---
+        async function executeFlow() {
+            if(isAnimating) return;
+            const input = el('payload-input').value;
+            if(!input) return;
+
+            isAnimating = true;
+            isPaused = false;
+            el('btn-pause').innerHTML = `<i class="fas fa-pause mr-1"></i> Pause (Space)`;
+            el('btn-pause').classList.replace('bg-amber-600', 'bg-slate-800');
+            el('card-pause-indicator').classList.add('hidden');
+            
+            el('fake-alert').classList.add('hidden');
+            
+            // Clear logs on new execution
+            clearNetworkLogs();
+            
+            // Jiggle Input container
+            el('input-container').classList.add('shake-intense');
+            setTimeout(() => el('input-container').classList.remove('shake-intense'), 400);
+
+            try {
+                if(currentMode === 'reflected') await flowReflected(input);
+                else if(currentMode === 'stored') await flowStored(input);
+                else if(currentMode === 'dom') await flowDOM(input);
+            } catch(e) { console.error(e); }
+
+            isAnimating = false;
+            el('sim-status').innerText = "Waiting...";
+            el('sim-status').className = "text-slate-400 animate-pulse";
+        }
+
+        // --- Module 1: Reflected XSS Flow ---
+        async function flowReflected(rawText) {
+            const isMalicious = rawText.includes('<') && rawText.includes('>');
+            const encodedText = encodeURIComponent(rawText);
+            el('sim-status').innerText = "Running Simulation...";
+            el('sim-status').className = isMalicious ? "text-rose-400 font-bold" : "text-sky-400 font-bold animate-pulse";
+            
+            el('browser-url').innerHTML = `https://vuln-shop.com/search?q=<span class="${isMalicious ? 'text-rose-500 font-bold' : 'text-sky-500'}">${encodedText}</span>`;
+            el('dynamic-area').classList.add('hidden');
+            
+            smoothScrollTo(el('scene-sim'));
+            await waitWithPause(500);
+
+            // Realistic Request
+            const reqContent = `GET /search?q=${encodedText} HTTP/1.1\r\nHost: vuln-shop.com\r\nConnection: keep-alive\r\nUpgrade-Insecure-Requests: 1\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8\r\nCookie: session_id=abc123secret\r\n\r\n`;
+            
+            await animateDataCard('request', reqContent, isMalicious, el('payload-input'), el('node-client'));
+            addNetworkLog('Request', 'GET /search', isMalicious, reqContent);
+            await fireLaser(1, true, isMalicious);
+
+            smoothScrollTo(el('code-panel'));
+            await processNode(el('node-server'), el('icon-server'), el('code-panel'), el('code-status'), el('vuln-line'), isMalicious, "Executing PHP...", "INJECTING PAYLOAD!");
+
+            // Realistic Response
+            smoothScrollTo(el('scene-sim'));
+            const dateStr = new Date().toUTCString();
+            const resHtml = `<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <title>Search Results</title>\n</head>\n<body>\n  <h1>Search Results</h1>\n  <div id="injected-content">\n    ${rawText}\n  </div>\n</body>\n</html>`;
+            const contentLength = new Blob([resHtml]).size;
+            
+            const resContent = `HTTP/1.1 200 OK\r\nServer: Apache/2.4.41 (Ubuntu)\r\nDate: ${dateStr}\r\nContent-Type: text/html; charset=UTF-8\r\nConnection: keep-alive\r\nX-Powered-By: PHP/7.4.3\r\nContent-Length: ${contentLength}\r\nX-XSS-Protection: 0\r\n\r\n${resHtml}`;
+            
+            await animateDataCard('response', resContent, isMalicious, el('code-panel'), el('node-server'));
+            addNetworkLog('Response', `200 OK (${contentLength} bytes)`, isMalicious, resContent);
+            await fireLaser(1, false, isMalicious);
+
+            smoothScrollTo(el('browser-container'));
+            await renderBrowser(isMalicious);
+            el('dynamic-area').classList.remove('hidden');
+            el('injected-content').innerHTML = isMalicious 
+                ? `<span class="bg-rose-100 text-rose-800 p-1 block truncate">${escapeHTML(rawText)}</span>` 
+                : escapeHTML(rawText);
+            
+            if(isMalicious) showFakeAlert(rawText);
+        }
+
+        // --- Module 2: Stored XSS Flow ---
+        async function flowStored(rawText) {
+            const isMalicious = rawText.includes('<') && rawText.includes('>');
+            const encodedText = encodeURIComponent(rawText);
+            storedPayload = { raw: rawText, encoded: encodedText, isMalicious: isMalicious }; // Save for reload
+            
+            el('sim-status').innerText = "Step 1: Attacker Posts Data...";
+            el('sim-status').className = isMalicious ? "text-rose-400 font-bold" : "text-sky-400 font-bold animate-pulse";
+            
+            el('injected-content-container').classList.add('hidden'); // Hide previous if any
+            
+            smoothScrollTo(el('scene-sim'));
+            await waitWithPause(500);
+
+            // --- STEP 1: POST REQUEST (Save to DB) ---
+            const reqContent1 = `POST /api/reviews HTTP/1.1\r\nHost: vuln-shop.com\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: ${encodedText.length + 7}\r\nCookie: session_id=attacker_sess\r\n\r\nreview=${encodedText}`;
+            await animateDataCard('request', reqContent1, isMalicious, el('payload-input'), el('node-client'));
+            addNetworkLog('Request', 'POST /api/reviews', isMalicious, reqContent1);
+            await fireLaser(1, true, isMalicious); 
+
+            smoothScrollTo(el('code-panel'));
+            await waitIfPaused();
+            el('node-server').classList.add(isMalicious ? 'node-active-red' : 'node-active-emerald');
+            
+            const vLine1 = el('vuln-line-1');
+            vLine1.classList.add('bg-rose-900/80', 'text-white');
+            // Align highlighter
+            const highlighter = el('code-highlighter');
+            highlighter.style.display = 'block';
+            highlighter.style.top = '5rem'; 
+            await waitWithPause(800);
+            
+            smoothScrollTo(el('scene-sim'));
+            await fireLaser(2, true, isMalicious); 
+            
+            el('node-db').classList.add(isMalicious ? 'node-active-red' : 'node-active-emerald');
+            el('icon-db').classList.replace('text-slate-300', isMalicious ? 'text-rose-400' : 'text-emerald-400');
+            await waitWithPause(600);
+            
+            await fireLaser(2, false, isMalicious); 
+            el('node-db').classList.remove('node-active-red', 'node-active-emerald');
+            el('icon-db').classList.replace(isMalicious ? 'text-rose-400' : 'text-emerald-400', 'text-slate-300');
+            vLine1.classList.remove('bg-rose-900/80', 'text-white');
+            highlighter.style.display = 'none';
+            
+            const resContent1 = `HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{"status":"success", "message":"Review saved."}`;
+            addNetworkLog('Response', '200 OK (Saved to DB)', isMalicious, resContent1);
+            await fireLaser(1, false, isMalicious); 
+            el('node-server').classList.remove('node-active-red', 'node-active-emerald');
+
+            await waitWithPause(1000);
+            
+            // Auto trigger reload for Step 2
+            await reloadBrowserFlow();
+        }
+
+        async function reloadBrowser() {
+            if(isAnimating || currentMode !== 'stored' || !storedPayload) return;
+            isAnimating = true;
+            isPaused = false;
+            el('btn-pause').innerHTML = `<i class="fas fa-pause mr-1"></i> Pause (Space)`;
+            el('btn-pause').classList.replace('bg-amber-600', 'bg-slate-800');
+            el('fake-alert').classList.add('hidden');
+            el('injected-content-container').classList.add('hidden');
+            
+            clearNetworkLogs();
+            
+            try {
+                await reloadBrowserFlow();
+            } catch(e) { console.error(e); }
+            
+            isAnimating = false;
+            el('sim-status').innerText = "Waiting...";
+            el('sim-status').className = "text-slate-400 animate-pulse";
+        }
+
+        async function reloadBrowserFlow() {
+            const rawText = storedPayload.raw;
+            const isMalicious = storedPayload.isMalicious;
+            
+            el('sim-status').innerText = "Step 2: Victim loads page...";
+            el('sim-status').className = isMalicious ? "text-rose-400 font-bold animate-pulse" : "text-sky-400 font-bold animate-pulse";
+            
+            el('payload-input').value = ""; 
+            el('browser-url').classList.add('bg-amber-100');
+            setTimeout(()=>el('browser-url').classList.remove('bg-amber-100'), 500);
+            
+            smoothScrollTo(el('scene-sim'));
+            await waitWithPause(500);
+
+            const reqContent2 = `GET /product/123 HTTP/1.1\r\nHost: vuln-shop.com\r\nCookie: session_id=victim_xyz_session\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\n\r\n`;
+            await animateDataCard('request', reqContent2, false, el('icon-client'), el('node-client')); // Request itself isn't malicious
+            addNetworkLog('Request', 'GET /product/123', false, reqContent2);
+            await fireLaser(1, true, false); 
+
+            el('node-server').classList.add(isMalicious ? 'node-active-red' : 'node-active-emerald');
+            await fireLaser(2, true, false); 
+            el('node-db').classList.add('node-active-emerald');
+            await waitWithPause(500);
+            await fireLaser(2, false, isMalicious); 
+            el('node-db').classList.remove('node-active-emerald');
+
+            smoothScrollTo(el('code-panel'));
+            const vLine2 = el('vuln-line-2');
+            vLine2.classList.add('bg-rose-900/80', 'text-white');
+            el('code-panel').classList.add('border-rose-500', 'shadow-[0_0_20px_rgba(225,29,72,0.4)]');
+            
+            const highlighter = el('code-highlighter');
+            highlighter.style.display = 'block';
+            highlighter.style.top = '9rem'; 
+
+            await waitWithPause(1000);
+            vLine2.classList.remove('bg-rose-900/80', 'text-white');
+            el('code-panel').classList.remove('border-rose-500', 'shadow-[0_0_20px_rgba(225,29,72,0.4)]');
+            el('node-server').classList.remove('node-active-red', 'node-active-emerald');
+            highlighter.style.display = 'none';
+
+            smoothScrollTo(el('scene-sim'));
+            const dateStr = new Date().toUTCString();
+            const resHtml = `<!DOCTYPE html>\n<html>\n<body>\n  <h1>Product Reviews</h1>\n  <div class="review">\n    <p>Alice</p>\n    <p>Great product!</p>\n  </div>\n  <div class="review">\n    <p>Guest</p>\n    <div>${rawText}</div>\n  </div>\n</body>\n</html>`;
+            const contentLength = new Blob([resHtml]).size;
+            const resContent2 = `HTTP/1.1 200 OK\r\nServer: Apache/2.4.41\r\nDate: ${dateStr}\r\nContent-Type: text/html\r\nContent-Length: ${contentLength}\r\n\r\n${resHtml}`;
+            
+            await animateDataCard('response', resContent2, isMalicious, el('code-panel'), el('node-server'));
+            addNetworkLog('Response', `200 OK (${contentLength} bytes)`, isMalicious, resContent2);
+            await fireLaser(1, false, isMalicious); 
+
+            smoothScrollTo(el('browser-container'));
+            await renderBrowser(isMalicious);
+            el('injected-content-container').classList.remove('hidden');
+            
+            el('injected-content').innerHTML = isMalicious 
+                ? `<span class="bg-rose-100 text-rose-800 p-1 block truncate">${escapeHTML(rawText)}</span>` 
+                : escapeHTML(rawText);
+            
+            if(isMalicious) showFakeAlert(rawText);
+        }
+
+        // --- Module 3: DOM-based XSS Flow ---
+        async function flowDOM(rawText) {
+            const isMalicious = rawText.includes('<') && rawText.includes('>');
+            const encodedText = encodeURIComponent(rawText);
+            el('sim-status').innerText = "Client-Side Processing...";
+            el('sim-status').className = isMalicious ? "text-rose-400 font-bold" : "text-emerald-400 font-bold animate-pulse";
+            
+            el('browser-url').innerHTML = `https://vuln-shop.com/profile#<span class="${isMalicious ? 'text-rose-500 font-bold' : 'text-emerald-500'}">${encodedText}</span>`;
+            
+            smoothScrollTo(el('scene-sim'));
+            await waitWithPause(800); 
+
+            el('node-client').classList.add(isMalicious ? 'node-active-red' : 'node-active-purple');
+            el('icon-client').classList.replace('text-slate-300', isMalicious ? 'text-rose-400' : 'text-purple-400');
+            
+            addNetworkLog('Local Event', 'URL Hash Changed', false, `Browser Event:\nHash changed to #${encodedText}\n(Note: URL Fragments '#' are NOT sent to the server in HTTP requests)`);
+
+            smoothScrollTo(el('code-panel'));
+            const codePanel = el('code-panel');
+            const vLine = el('vuln-line');
+            const highlighter = el('code-highlighter');
+            
+            codePanel.classList.add('border-purple-500', 'shadow-[0_0_20px_rgba(168,85,247,0.3)]');
+            await waitWithPause(800);
+            
+            if(isMalicious) {
+                vLine.classList.add('bg-rose-900/80', 'text-white');
+                codePanel.classList.replace('border-purple-500', 'border-rose-500');
+                codePanel.classList.replace('shadow-[0_0_20px_rgba(168,85,247,0.3)]', 'shadow-[0_0_30px_rgba(225,29,72,0.5)]');
+                highlighter.style.display = 'block';
+                highlighter.style.top = '7.5rem'; 
+                await waitWithPause(1200);
+            } else {
+                highlighter.style.display = 'block';
+                highlighter.style.top = '7.5rem'; 
+                await waitWithPause(1000);
+            }
+            
+            vLine.classList.remove('bg-rose-900/80', 'text-white');
+            highlighter.style.display = 'none';
+            codePanel.classList.remove('border-purple-500', 'border-rose-500', 'shadow-[0_0_20px_rgba(168,85,247,0.3)]', 'shadow-[0_0_30px_rgba(225,29,72,0.5)]');
+
+            smoothScrollTo(el('browser-container'));
+            await waitIfPaused();
+            
+            const overlay = el('render-overlay');
+            overlay.classList.remove('hidden');
+            el('render-scanline').className = `render-scanline ${isMalicious ? 'malicious' : ''}`;
+            el('render-spinner').className = `fab fa-js text-5xl mb-4 ${isMalicious ? 'text-rose-500' : 'text-yellow-400'}`;
+            el('render-text').innerText = "Executing JS Context...";
+            el('render-text').className = `text-xl font-black uppercase ${isMalicious ? 'text-rose-400' : 'text-yellow-400'}`;
+            
+            await waitWithPause(1000);
+            overlay.classList.add('hidden');
+            el('node-client').classList.remove('node-active-red', 'node-active-purple');
+            el('icon-client').classList.replace(isMalicious ? 'text-rose-400' : 'text-purple-400', 'text-slate-300');
+
+            if(isMalicious) {
+                el('browser-ui').classList.add('shake-intense');
+                setTimeout(() => el('browser-ui').classList.remove('shake-intense'), 500);
+                el('injected-content').innerHTML = `<span class="bg-rose-100 text-rose-800 px-2 rounded block truncate">${escapeHTML(rawText)}</span>`;
+                showFakeAlert(rawText);
+            } else {
+                el('injected-content').innerHTML = `Welcome, <span class="text-emerald-600">${escapeHTML(rawText)}</span>!`;
+            }
+        }
+
+        // --- Common Animation Helpers ---
+        async function processNode(node, icon, panel, statusLabel, vulnLine, isMalicious, normalTxt, alertTxt) {
+            await waitIfPaused();
+            node.classList.add(isMalicious ? 'node-active-red' : 'node-active-emerald');
+            icon.classList.replace('text-slate-300', isMalicious ? 'text-rose-400' : 'text-emerald-400');
+            panel.classList.add('border-emerald-500', 'shadow-[0_0_15px_rgba(16,185,129,0.2)]');
+            statusLabel.innerText = normalTxt;
+            statusLabel.classList.add('bg-emerald-600', 'text-white');
+            
+            const highlighter = el('code-highlighter');
+            
+            if(isMalicious) {
+                await waitWithPause(500);
+                vulnLine.classList.add('bg-rose-900/80', 'text-white');
+                panel.classList.replace('border-emerald-500', 'border-rose-500');
+                panel.classList.replace('shadow-[0_0_15px_rgba(16,185,129,0.2)]', 'shadow-[0_0_25px_rgba(225,29,72,0.4)]');
+                statusLabel.innerText = alertTxt;
+                statusLabel.classList.replace('bg-emerald-600', 'bg-rose-600');
+                
+                highlighter.style.display = 'block';
+                highlighter.style.top = '6rem';
+                
+                await waitWithPause(1200);
+            } else {
+                highlighter.style.display = 'block';
+                highlighter.style.top = '6rem';
+                await waitWithPause(1000);
+            }
+
+            vulnLine.classList.remove('bg-rose-900/80', 'text-white');
+            highlighter.style.display = 'none';
+            node.classList.remove('node-active-red', 'node-active-emerald');
+            icon.classList.replace(isMalicious ? 'text-rose-400' : 'text-emerald-400', 'text-slate-300');
+            panel.classList.remove('border-emerald-500', 'border-rose-500', 'shadow-[0_0_15px_rgba(16,185,129,0.2)]', 'shadow-[0_0_25px_rgba(225,29,72,0.4)]');
+            statusLabel.innerText = "Idle";
+            statusLabel.classList.remove('bg-emerald-600', 'bg-rose-600', 'text-white');
+        }
+
+        async function renderBrowser(isMalicious) {
+            await waitIfPaused();
+            el('node-client').classList.add(isMalicious ? 'node-active-red' : 'node-active-blue');
+            el('icon-client').classList.replace('text-slate-300', isMalicious ? 'text-rose-400' : 'text-sky-400');
+            
+            const overlay = el('render-overlay');
+            overlay.classList.remove('hidden');
+            el('render-scanline').className = `render-scanline ${isMalicious ? 'malicious' : ''}`;
+            el('render-spinner').className = `fas fa-cog fa-spin text-4xl mb-4 ${isMalicious ? 'text-rose-500' : 'text-sky-400'}`;
+            el('render-text').innerText = "Parsing DOM...";
+            el('render-text').className = `text-xl font-black uppercase ${isMalicious ? 'text-rose-400' : 'text-sky-400'}`;
+            
+            await waitWithPause(800);
+            overlay.classList.add('hidden');
+            el('node-client').classList.remove('node-active-red', 'node-active-blue');
+            el('icon-client').classList.replace(isMalicious ? 'text-rose-400' : 'text-sky-400', 'text-slate-300');
+
+            if(isMalicious) {
+                el('browser-ui').classList.add('shake-intense');
+                setTimeout(() => el('browser-ui').classList.remove('shake-intense'), 500);
+            }
+        }
+
+        function showFakeAlert(rawText) {
+            let msg = "XSS Payload Executed!";
+            const alertMatch = rawText.match(/alert\(['"]?(.*?)['"]?\)/i);
+            if (alertMatch && alertMatch[1]) {
+                msg = alertMatch[1] === 'document.cookie' ? "session_id=abc123secret_stolen_data" : alertMatch[1];
+            } else if (rawText.includes('document.cookie')) {
+                msg = "session_id=abc123secret_stolen_data";
+            }
+            setTimeout(() => {
+                el('alert-msg').innerText = msg;
+                el('fake-alert').classList.remove('hidden');
+            }, 300);
+        }
+
+        async function animateDataCard(type, content, isMalicious, startElm, endElm) {
+            await waitIfPaused();
+            const card = el('data-card');
+            const isReq = type === 'request';
+            
+            el('data-card-title').innerHTML = isReq ? `<i class="fas fa-upload mr-2"></i>Outbound Request` : `<i class="fas fa-download mr-2"></i>Inbound Response`;
+            el('data-card-title').className = `text-sm md:text-base ${isMalicious ? 'text-rose-400' : (isReq ? 'text-sky-400' : 'text-purple-400')}`;
+            card.className = `bg-slate-900 rounded-xl overflow-hidden border-2 w-[95vw] md:w-[750px] max-h-[60vh] md:max-h-[80vh] ${isMalicious ? 'border-rose-500 shadow-[0_0_30px_rgba(225,29,72,0.5)]' : (isReq ? 'border-sky-500 shadow-[0_0_30px_rgba(56,189,248,0.5)]' : 'border-purple-500 shadow-[0_0_30px_rgba(168,85,247,0.5)]')}`;
+            
+            // Simplified highlight for brevity
             let displayContent = escapeHTML(content);
+            const payload = el('payload-input').value;
             const safePayload = escapeHTML(payload);
             const encodedPayload = encodeURIComponent(payload);
             
@@ -515,321 +934,152 @@
                 displayContent = displayContent.replace(safePayload, `<span class="${isMalicious ? 'bg-rose-900/60 text-rose-300' : 'bg-purple-900/60 text-purple-300'} px-1 rounded font-bold">${safePayload}</span>`);
             }
             
-            networkModalContent.innerHTML = displayContent;
+            el('data-card-code').innerHTML = displayContent;
+
+            card.style.pointerEvents = 'none';
+            const sRect = startElm.getBoundingClientRect();
+            const vW = window.innerWidth / 2, vH = window.innerHeight / 2;
+            const sX = (sRect.left + sRect.width/2) - vW, sY = (sRect.top + sRect.height/2) - vH;
+
+            card.style.transition = 'none';
+            card.style.transform = `translate(calc(-50% + ${sX}px), calc(-50% + ${sY}px)) scale(0.1)`;
+            card.style.opacity = '0';
+            card.style.zIndex = '100'; // Ensure it's above other elements
             
-            networkModal.classList.remove('hidden');
-            setTimeout(() => networkModal.classList.remove('opacity-0'), 10);
-        }
-
-        function closeNetworkModal() {
-            networkModal.classList.add('opacity-0');
-            networkModalCard.classList.replace('scale-100', 'scale-95');
-            setTimeout(() => networkModal.classList.add('hidden'), 300);
-        }
-
-        // Auto Scroll for mobile
-        function smoothScrollTo(element) {
-            if(window.innerWidth < 1024) { // mobile/tablet breakpoint
-                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        }
-
-        async function triggerExtremeFlow() {
-            isAnimating = true;
-            isPaused = false;
-            btnPause.classList.replace('bg-amber-600', 'bg-slate-800');
-            btnPause.innerHTML = `<i class="fas fa-pause mr-1 md:mr-2"></i> Pause (Space)`;
-            cardPauseIndicator.classList.add('hidden');
-
-            const rawText = searchInput.value;
-            const isMalicious = rawText.includes('<') && rawText.includes('>'); 
-            const encodedText = encodeURIComponent(rawText);
-            
-            // Reset UI
-            searchResultsArea.classList.add('hidden');
-            fakeAlert.classList.add('hidden');
-            injectedContent.innerHTML = '';
-            browserUrl.innerHTML = `https://vuln-shop.com/search`;
-            simStatus.innerText = "Running Simulation...";
-            simStatus.className = isMalicious ? "text-rose-400 font-bold" : "text-sky-400 font-bold animate-pulse";
-            emptyLogMsg.style.display = 'none';
-            
-            networkLog.querySelectorAll('.log-entry').forEach(log => log.remove());
-
-            // 1. User Clicks Search - Flash the input box
-            searchBoxContainer.classList.add('shake-intense');
-            setTimeout(() => searchBoxContainer.classList.remove('shake-intense'), 400);
-            await waitWithPause(400);
-
-            browserUrl.innerHTML = `https://vuln-shop.com/search?q=<span class="${isMalicious ? 'text-rose-500' : 'text-sky-500'} font-bold">${encodedText}</span>`;
-
-            // Scroll up to ensure map is visible on mobile
-            smoothScrollTo(document.getElementById('scene-sim'));
-
-            // 2. Generate Highly Realistic HTTP Request
-            const reqContent = `GET /search?q=${encodedText} HTTP/1.1\r\nHost: vuln-shop.com\r\nConnection: keep-alive\r\nsec-ch-ua: "Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"\r\nsec-ch-ua-mobile: ?0\r\nsec-ch-ua-platform: "Windows"\r\nUpgrade-Insecure-Requests: 1\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7\r\nSec-Fetch-Site: same-origin\r\nSec-Fetch-Mode: navigate\r\nSec-Fetch-User: ?1\r\nSec-Fetch-Dest: document\r\nReferer: https://vuln-shop.com/\r\nAccept-Encoding: gzip, deflate, br, zstd\r\nAccept-Language: en-US,en;q=0.9\r\nCookie: PHPSESSID=a1b2c3d4e5f6g7h8i9j0k1l2m3; theme=dark; tracking_id=9876xyz\r\n\r\n`;
-            
-            await animateDataCard('request', reqContent, isMalicious, searchInput, nodeClient);
-
-            // 3. Fire the Packet (Client -> Server)
-            addNetworkLog('Request', 'GET /search', isMalicious, reqContent);
-            await fireLaser(nodeClient, nodeServer, isMalicious);
-
-            // 4. Server Processing
-            smoothScrollTo(backendPanel);
-            await waitIfPaused();
-            
-            nodeServer.classList.add(isMalicious ? 'node-active-red' : 'node-active-emerald');
-            iconServer.classList.replace('text-slate-300', isMalicious ? 'text-rose-400' : 'text-emerald-400');
-            backendPanel.classList.add('border-emerald-500', 'shadow-[0_0_15px_rgba(16,185,129,0.2)]');
-            backendStatus.innerText = "Executing PHP...";
-            backendStatus.classList.add('bg-emerald-600', 'text-white');
-            
-            if(isMalicious) {
-                await waitWithPause(500);
-                vulnLine.classList.add('bg-rose-900/80', 'text-white');
-                backendPanel.classList.replace('border-emerald-500', 'border-rose-500');
-                backendPanel.classList.replace('shadow-[0_0_15px_rgba(16,185,129,0.2)]', 'shadow-[0_0_25px_rgba(225,29,72,0.4)]');
-                backendStatus.innerText = "INJECTING PAYLOAD!";
-                backendStatus.classList.replace('bg-emerald-600', 'bg-rose-600');
-                await waitWithPause(1200);
-            } else {
-                codeHighlighter.style.display = 'block';
-                await waitWithPause(1000);
-            }
-
-            // Scroll back up to map
-            smoothScrollTo(document.getElementById('scene-sim'));
-
-            // 5. Generate Highly Realistic HTTP Response
-            const dateStr = new Date().toUTCString();
-            
-            // Construct a proper HTML structure to make it look legitimate
-            const resHtml = `<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>Search Results - Vuln Shop</title>\n    <link rel="stylesheet" href="/assets/css/style.css">\n</head>\n<body class="bg-light">\n    <header class="navbar">\n        <nav>\n            <a href="/">Home</a> | <a href="/products">Products</a> | <a href="/cart">Cart</a>\n        </nav>\n    </header>\n    <main class="container">\n        <h1>Search Results</h1>\n        <p class="text-muted">You searched for:</p>\n        <div id="injected-content" class="search-box p-4 border rounded">\n            ${rawText}\n        </div>\n        <section class="results mt-4">\n            <p>No products found matching your query.</p>\n        </section>\n    </main>\n    <footer>\n        <p>&copy; 2026 Vuln Shop Inc.</p>\n    </footer>\n    <script src="/assets/js/main.js"><\/script>\n</body>\n</html>`;
-            
-            // Calculate actual content length
-            const contentLength = new Blob([resHtml]).size;
-            
-            // Construct headers with security misconfigurations evident
-            const resContent = `HTTP/1.1 200 OK\r\nDate: ${dateStr}\r\nServer: Apache/2.4.41 (Ubuntu)\r\nX-Powered-By: PHP/7.4.3\r\nVary: Accept-Encoding\r\nCache-Control: no-store, no-cache, must-revalidate\r\nPragma: no-cache\r\nX-XSS-Protection: 0\r\nConnection: keep-alive\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: ${contentLength}\r\n\r\n${resHtml}`;
-            
-            vulnLine.classList.remove('bg-rose-900/80', 'text-white');
-            codeHighlighter.style.display = 'none';
-            nodeServer.classList.remove('node-active-red', 'node-active-emerald');
-            iconServer.classList.replace(isMalicious ? 'text-rose-400' : 'text-emerald-400', 'text-slate-300');
-            backendPanel.classList.remove('border-emerald-500', 'border-rose-500', 'shadow-[0_0_15px_rgba(16,185,129,0.2)]', 'shadow-[0_0_25px_rgba(225,29,72,0.4)]');
-            backendStatus.innerText = "Idle";
-            backendStatus.classList.remove('bg-emerald-600', 'bg-rose-600', 'text-white');
-
-            await animateDataCard('response', resContent, isMalicious, backendPanel, nodeServer);
-
-            // 6. Fire the Packet (Server -> Client)
-            addNetworkLog('Response', `200 OK (HTML - ${contentLength} bytes)`, isMalicious, resContent);
-            await fireLaser(nodeServer, nodeClient, isMalicious);
-
-            // 7. Browser Rendering
-            smoothScrollTo(document.getElementById('browser-container'));
-            await renderInBrowser(rawText, isMalicious);
-
-            // Reset
-            isAnimating = false;
-            simStatus.innerText = "Waiting for Input";
-            simStatus.className = "text-slate-400 animate-pulse";
-        }
-
-        async function animateDataCard(type, content, isMalicious, startElm, endElm) {
-            await waitIfPaused();
-
-            const isReq = type === 'request';
-            const themeColorClass = isMalicious ? 'text-rose-400' : (isReq ? 'text-sky-400' : 'text-purple-400');
-            const borderColorClass = isMalicious ? 'border-rose-500' : (isReq ? 'border-sky-500' : 'border-purple-500');
-            const glowClass = isMalicious ? 'shadow-[0_0_30px_rgba(225,29,72,0.5)]' : (isReq ? 'shadow-[0_0_30px_rgba(56,189,248,0.5)]' : 'shadow-[0_0_30px_rgba(168,85,247,0.5)]');
-
-            dataCardTitle.innerHTML = isReq ? `<i class="fas fa-upload mr-2"></i>Outbound Request` : `<i class="fas fa-download mr-2"></i>Inbound Response`;
-            dataCardTitle.className = `text-sm md:text-base ${themeColorClass}`;
-            dataCard.className = `bg-slate-900 rounded-xl overflow-hidden border-2 w-[95vw] md:w-[750px] max-h-[60vh] md:max-h-[80vh] ${borderColorClass} ${glowClass}`;
-            
-            const safeContent = escapeHTML(content);
-            const payload = searchInput.value;
-            const safePayload = escapeHTML(payload);
-            const encodedPayload = encodeURIComponent(payload);
-            
-            let displayContent = safeContent;
-            if(isReq && content.includes(encodedPayload)) {
-                displayContent = displayContent.replace(encodedPayload, `<span class="${isMalicious ? 'bg-rose-900/60 text-rose-300' : 'bg-sky-900/60 text-sky-300'} px-1 rounded font-bold">${encodedPayload}</span>`);
-            } else if(!isReq && displayContent.includes(safePayload)) {
-                displayContent = displayContent.replace(safePayload, `<span class="${isMalicious ? 'bg-rose-900/60 text-rose-300' : 'bg-purple-900/60 text-purple-300'} px-1 rounded font-bold">${safePayload}</span>`);
-            }
-            
-            dataCardCode.innerHTML = displayContent;
-
-            // Positioning logic relative to current viewport scroll
-            dataCard.style.pointerEvents = 'none';
-            const startRect = startElm.getBoundingClientRect();
-            const vW = window.innerWidth / 2;
-            const vH = window.innerHeight / 2;
-            
-            const startX = (startRect.left + startRect.width/2) - vW;
-            const startY = (startRect.top + startRect.height/2) - vH;
-
-            dataCard.style.transition = 'none';
-            dataCard.style.transform = `translate(calc(-50% + ${startX}px), calc(-50% + ${startY}px)) scale(0.1)`;
-            dataCard.style.opacity = '0';
-            
-            void dataCard.offsetWidth; // reflow
-
+            void card.offsetWidth; // Reflow
             await waitIfPaused(); 
 
-            // Pop out
-            dataCard.style.transition = 'all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)';
-            dataCard.style.transform = `translate(-50%, -50%) scale(1)`;
-            dataCard.style.opacity = '1';
+            // Center
+            card.style.transition = 'all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)';
+            card.style.transform = `translate(-50%, -50%) scale(1)`;
+            card.style.opacity = '1';
 
-            setTimeout(() => { dataCard.style.pointerEvents = 'auto'; }, 600);
-
+            setTimeout(() => card.style.pointerEvents = 'auto', 600);
             await waitWithPause(600); 
-            await waitWithPause(2500); 
+            await waitWithPause(2000); // Wait in center
 
-            // Fly in
-            dataCard.style.pointerEvents = 'none'; 
-            const endRect = endElm.getBoundingClientRect();
-            const endX = (endRect.left + endRect.width/2) - vW;
-            const endY = (endRect.top + endRect.height/2) - vH;
+            // Fly to end
+            card.style.pointerEvents = 'none'; 
+            const eRect = endElm.getBoundingClientRect();
+            const eX = (eRect.left + eRect.width/2) - vW, eY = (eRect.top + eRect.height/2) - vH;
 
-            dataCard.style.transition = 'all 0.5s ease-in-out';
-            dataCard.style.transform = `translate(calc(-50% + ${endX}px), calc(-50% + ${endY}px)) scale(0.1) rotate(${isReq ? '10deg' : '-10deg'})`;
-            dataCard.style.opacity = '0';
+            card.style.transition = 'all 0.5s ease-in-out';
+            card.style.transform = `translate(calc(-50% + ${eX}px), calc(-50% + ${eY}px)) scale(0.1) rotate(${isReq ? '10deg' : '-10deg'})`;
+            card.style.opacity = '0';
 
             await waitWithPause(500); 
+            card.style.zIndex = '-1'; // Hide behind when done
         }
 
-        function fireLaser(startNode, endNode, isMalicious) {
+        function fireLaser(pathIndex, isForward, isMalicious) {
             return new Promise(async resolve => {
                 await waitIfPaused();
-                const isForward = startNode === nodeClient;
-                laserPacket.style.display = 'block';
+                const packet = el(`laser-packet-${pathIndex}`);
+                const path = el(`anim-path-${pathIndex}`);
+                packet.style.display = 'block';
                 
-                if(isMalicious) {
-                    laserPacket.className = 'absolute top-1/2 -translate-y-1/2 w-8 md:w-16 h-3 md:h-5 rounded-full bg-rose-500 shadow-[0_0_15px_#ef4444] z-20';
-                } else {
-                    laserPacket.className = 'absolute top-1/2 -translate-y-1/2 w-8 md:w-16 h-2 md:h-3 rounded-full bg-sky-400 shadow-[0_0_15px_#38bdf8] z-20';
-                }
+                let colorClass = isMalicious ? 'bg-rose-500 shadow-[0_0_15px_#ef4444]' : (pathIndex === 1 ? 'bg-sky-400 shadow-[0_0_15px_#38bdf8]' : 'bg-purple-400 shadow-[0_0_15px_#a855f7]');
+                packet.className = `absolute top-1/2 -translate-y-1/2 rounded-full z-20 ${colorClass}`;
+                packet.classList.add(pathIndex === 1 ? (window.innerWidth<768?'w-8':'w-16') : 'w-6');
+                packet.classList.add(pathIndex === 1 ? (window.innerWidth<768?'h-2':'h-3') : 'h-2');
 
-                const pathWidth = animPath.offsetWidth;
-                
-                if (isForward) {
-                    laserPacket.style.left = '0px';
-                    laserPacket.style.transform = 'translate(-50%, -50%)';
-                } else {
-                    laserPacket.style.left = `${pathWidth}px`;
-                    laserPacket.style.transform = 'translate(-50%, -50%) rotate(180deg)';
-                }
+                const width = path.offsetWidth;
+                const kf = isForward ? [{left:'0px'},{left:`${width}px`}] : [{left:`${width}px`},{left:'0px'}];
+                if(isForward) packet.style.transform = 'translate(-50%, -50%)';
+                else packet.style.transform = 'translate(-50%, -50%) rotate(180deg)';
 
-                const keyframes = isForward 
-                    ? [ { left: '0px' }, { left: `${pathWidth}px` } ]
-                    : [ { left: `${pathWidth}px` }, { left: '0px' } ];
-                
-                const anim = laserPacket.animate(keyframes, {
-                    duration: 600,
-                    easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
-                    fill: 'forwards'
-                });
-
+                const anim = packet.animate(kf, { duration: 600, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'forwards' });
                 activeAnimations.push(anim);
                 if(isPaused) anim.pause();
 
                 anim.onfinish = () => {
                     activeAnimations = activeAnimations.filter(a => a !== anim);
-                    laserPacket.style.display = 'none';
+                    packet.style.display = 'none';
                     resolve();
                 };
             });
         }
 
-        async function renderInBrowser(rawText, isMalicious) {
-            await waitIfPaused();
-            
-            nodeClient.classList.add(isMalicious ? 'node-active-red' : 'node-active-blue');
-            iconClient.classList.replace('text-slate-300', isMalicious ? 'text-rose-400' : 'text-sky-400');
-            
-            renderOverlay.classList.remove('hidden');
-            renderScanline.className = `render-scanline ${isMalicious ? 'malicious' : ''}`;
-            renderSpinner.className = `fas fa-cog fa-spin text-3xl md:text-5xl mb-2 md:mb-4 ${isMalicious ? 'text-rose-500' : 'text-sky-400'}`;
-            renderText.innerText = "Parsing DOM...";
-            renderText.className = `text-lg md:text-2xl font-black tracking-widest uppercase text-center ${isMalicious ? 'text-rose-400' : 'text-sky-400'}`;
-            
-            await waitWithPause(800);
-            renderText.innerText = "Executing Scripts...";
-            await waitWithPause(800);
-
-            renderOverlay.classList.add('hidden');
-            nodeClient.classList.remove('node-active-red', 'node-active-blue');
-            iconClient.classList.replace(isMalicious ? 'text-rose-400' : 'text-sky-400', 'text-slate-300');
-
-            searchResultsArea.classList.remove('hidden');
-            
-            if (isMalicious) {
-                document.getElementById('browser-ui').classList.add('shake-intense');
-                setTimeout(() => document.getElementById('browser-ui').classList.remove('shake-intense'), 500);
-
-                injectedContent.innerHTML = `<span class="bg-rose-100 text-rose-800 p-1 rounded font-code text-xs md:text-sm border border-rose-300 shadow-inner block overflow-hidden truncate">${escapeHTML(rawText)}</span>`;
-                
-                let msg = "VULNERABILITY EXPLOITED!\nXSS Executed in context of vuln-shop.com";
-                const alertMatch = rawText.match(/alert\(['"]?(.*?)['"]?\)/i);
-                if (alertMatch && alertMatch[1]) {
-                    msg = alertMatch[1] === 'document.cookie' ? "session_id=abc123secret_stolen_data" : alertMatch[1];
-                } else if (rawText.includes('document.cookie')) {
-                    msg = "session_id=abc123secret_stolen_data";
-                }
-                
-                await waitWithPause(300); 
-                
-                alertMsg.innerText = msg;
-                fakeAlert.classList.remove('hidden');
-            } else {
-                injectedContent.innerHTML = `<span class="text-slate-700">${escapeHTML(rawText)}</span>`;
+        // --- Utils & Event Listeners ---
+        function smoothScrollTo(element) { if(window.innerWidth < 1024) element.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+        
+        // Use event delegation or check existence for dynamically added elements
+        document.body.addEventListener('click', function(e) {
+            if(e.target && e.target.id === 'btn-ok-alert') {
+                el('fake-alert').classList.add('hidden');
             }
-        }
+        });
 
         function addNetworkLog(type, summary, isMalicious, rawContent) {
-            const el = document.createElement('div');
+            const wrap = document.createElement('div');
             const isReq = type === 'Request';
-            const icon = isReq ? 'fa-arrow-up text-sky-400' : 'fa-arrow-down text-purple-400';
+            const icon = type === 'Local Event' ? 'fa-desktop text-emerald-400' : (isReq ? 'fa-arrow-up text-sky-400' : 'fa-arrow-down text-purple-400');
             const border = isMalicious ? 'border-rose-500/50 bg-rose-900/20' : 'border-slate-600 bg-slate-800';
             
-            el.className = `log-entry border ${border} rounded mb-2 md:mb-3 shadow-md fade-in overflow-hidden transition-all`;
-            el.innerHTML = `
-                <div class="p-2 md:p-3 flex justify-between items-center cursor-pointer hover:bg-slate-700/50 transition-colors log-header">
-                    <div class="flex items-center gap-2 md:gap-3 shrink-0">
-                        <i class="fas ${icon} text-sm"></i>
-                        <span class="font-bold text-slate-200 text-xs md:text-sm">${type}</span>
-                    </div>
-                    <div class="flex items-center gap-2 md:gap-3 min-w-0">
-                        <button class="btn-expand-log hover:text-sky-400 text-slate-400 transition-colors px-1.5 py-0.5 md:px-2 md:py-1 rounded bg-slate-800 border border-slate-600 hover:border-sky-500 shrink-0" title="Expand Detail">
-                            <i class="fas fa-expand text-[10px] md:text-xs"></i>
-                        </button>
-                        <span class="font-code text-[10px] md:text-xs truncate ${isMalicious ? 'text-rose-400 font-bold' : 'text-slate-400'}">${summary}</span>
-                        <i class="fas fa-chevron-down text-slate-500 text-[10px] md:text-xs transition-transform duration-300 ml-1 shrink-0"></i>
+            wrap.className = `log-entry border ${border} rounded mb-2 shadow-md fade-in overflow-hidden transition-all`;
+            wrap.innerHTML = `
+                <div class="p-2 flex justify-between items-center cursor-pointer hover:bg-slate-700/50 log-header">
+                    <div class="flex items-center gap-2 shrink-0"><i class="fas ${icon} text-sm"></i><span class="font-bold text-slate-200 text-xs">${type}</span></div>
+                    <div class="flex items-center gap-2 min-w-0">
+                        <button class="btn-expand-log hover:text-sky-400 text-slate-400 px-1 py-0.5 rounded bg-slate-800 border border-slate-600 shrink-0" title="Expand"><i class="fas fa-expand text-[10px]"></i></button>
+                        <span class="font-code text-[10px] truncate ${isMalicious ? 'text-rose-400 font-bold' : 'text-slate-400'}">${summary}</span>
+                        <i class="fas fa-chevron-down text-slate-500 text-[10px] ml-1 shrink-0"></i>
                     </div>
                 </div>
-                <div class="hidden bg-[#0d1117] p-3 md:p-4 border-t border-slate-700/50 log-body">
-                    <pre class="font-code text-[10px] md:text-xs text-slate-300 whitespace-pre-wrap break-all">${escapeHTML(rawContent)}</pre>
+                <div class="hidden bg-[#0d1117] p-3 border-t border-slate-700/50 log-body">
+                    <pre class="font-code text-[10px] text-slate-300 whitespace-pre-wrap break-all">${escapeHTML(rawContent)}</pre>
                 </div>
             `;
+            wrap.querySelector('.btn-expand-log').onclick = (e) => { e.stopPropagation(); openNetworkModal(`${type} Details`, rawContent, isMalicious); };
+            wrap.querySelector('.log-header').onclick = () => { wrap.querySelector('.log-body').classList.toggle('hidden'); wrap.querySelector('.fa-chevron-down').classList.toggle('rotate-180'); };
+            el('network-log').prepend(wrap);
+        }
 
-            el.querySelector('.btn-expand-log').addEventListener('click', function(e) {
-                e.stopPropagation(); 
-                openNetworkModal(`${type} Details`, rawContent, isMalicious);
-            });
+        // Modal Logic
+        function openNetworkModal(title, content, isMalicious) {
+            el('network-modal-title').innerHTML = title;
+            el('network-modal-title').className = `font-bold text-base md:text-xl truncate ${isMalicious ? 'text-rose-400' : 'text-sky-400'}`;
+            el('network-modal-card').className = `bg-slate-800 border-2 ${isMalicious ? 'border-rose-500 shadow-[0_0_30px_rgba(225,29,72,0.3)]' : 'border-sky-500 shadow-[0_0_30px_rgba(56,189,248,0.3)]'} rounded-xl w-full max-w-5xl max-h-[95vh] flex flex-col transform scale-100 transition-transform duration-300`;
+            el('network-modal-content').innerText = content;
+            el('network-modal').classList.remove('hidden');
+            setTimeout(() => el('network-modal').classList.remove('opacity-0'), 10);
+        }
+        function closeNetworkModal() {
+            el('network-modal').classList.add('opacity-0');
+            el('network-modal-card').classList.replace('scale-100', 'scale-95');
+            setTimeout(() => el('network-modal').classList.add('hidden'), 300);
+        }
 
-            el.querySelector('.log-header').addEventListener('click', function() {
-                const body = el.querySelector('.log-body');
-                const chevron = el.querySelector('.fa-chevron-down');
-                body.classList.toggle('hidden');
-                chevron.classList.toggle('rotate-180');
-            });
-
-            networkLog.prepend(el);
+        // Pause Logic
+        el('btn-pause').onclick = togglePause;
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && isAnimating && el('network-modal').classList.contains('hidden') && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+                e.preventDefault(); togglePause();
+            }
+        });
+        function togglePause() {
+            if (!isAnimating) return;
+            isPaused = !isPaused;
+            if (isPaused) {
+                el('btn-pause').innerHTML = `<i class="fas fa-play mr-1"></i> Play (Space)`;
+                el('btn-pause').classList.replace('bg-slate-800', 'bg-amber-600');
+                el('btn-pause').classList.replace('border-slate-600', 'border-amber-500');
+                el('sim-status').innerText = "PAUSED";
+                el('sim-status').classList.replace('text-sky-400', 'text-amber-400');
+                el('sim-status').classList.remove('animate-pulse');
+                el('card-pause-indicator').classList.remove('hidden');
+                activeAnimations.forEach(a => a.pause());
+            } else {
+                el('btn-pause').innerHTML = `<i class="fas fa-pause mr-1"></i> Pause (Space)`;
+                el('btn-pause').classList.replace('bg-amber-600', 'bg-slate-800');
+                el('btn-pause').classList.replace('border-amber-500', 'border-slate-600');
+                el('sim-status').innerText = "Running Simulation...";
+                el('sim-status').classList.replace('text-amber-400', 'text-sky-400');
+                el('sim-status').classList.add('animate-pulse');
+                el('card-pause-indicator').classList.add('hidden');
+                activeAnimations.forEach(a => a.play());
+                if (pauseResolver) { pauseResolver(); pauseResolver = null; }
+            }
         }
     </script>
 </body>
